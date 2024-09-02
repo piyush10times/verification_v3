@@ -84,6 +84,7 @@ export class MicroDataRetriver {
     DISTINCT COALESCE(tg.name, ''),
     ','
     ) AS EVENTTAG,
+     e."ownerSourceId" AS ownerscourceid,
     C."name" AS OWNERNAME,
     C."website" AS OWNERWEBSITE,
     C."logoUrl" AS OWNERLOGOURL,
@@ -274,4 +275,5 @@ export interface EventDetails {
   eventcityname: string | null;
   eventcountryname: string | null;
   eventstatename: string | null;
+  ownerscourceid: number | null;
 }

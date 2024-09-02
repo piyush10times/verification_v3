@@ -307,6 +307,18 @@ export class WorkerService {
           flagTowrite = true;
         }
         if (
+          (microServiceData?.ownerSourceId !== null ||
+            event1Datafrom10times?.company_id !== null) &&
+          microServiceData?.ownerSourceId !== event1Datafrom10times?.company_id
+        ) {
+          data_do_not_match += `\n companyId not matched ${
+            microServiceData?.ownerSourceId +
+            '  $$  ' +
+            event1Datafrom10times?.company_id
+          }`;
+          flagTowrite = true;
+        }
+        if (
           (microServiceData?.publishStatus !== null ||
             event1Datafrom10times?.publish_status !== null) &&
           microServiceData?.publishStatus === 1 &&
@@ -1107,6 +1119,7 @@ export interface EventDetailsMicro {
   eventcityname: string | null;
   eventcountryname: string | null;
   eventstatename: string | null;
+  ownerscourceid: number | null;
 }
 export interface EventDetails {
   event_id: number | null;
