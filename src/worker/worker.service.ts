@@ -779,7 +779,10 @@ export class WorkerService {
           data_do_not_match += `\n Event futureExpexctedStartDate not matched`;
           flagTowrite = true;
         }
-        if (esData?._source?.avg_rating !== microServiceData?.averageRating) {
+        if (
+          parseFloat(esData?._source?.avg_rating + '') !==
+          microServiceData?.averageRating
+        ) {
           if (
             esData?._source?.avg_rating !== undefined &&
             microServiceData?.averageRating + '' !== 0 + ''
