@@ -726,10 +726,10 @@ export class WorkerService {
           flagTowrite = true;
         }
         if (
-          (esData?._source?.exhibitingLeads !== undefined ||
-            (microServiceData?.exhibitorsLeadCount ?? 121) === 0) &&
-          esData?._source?.exhibitingLeads !==
-            microServiceData?.exhibitorsLeadCount
+          (+esData?._source?.exhibitingLeads !== undefined ||
+            +(microServiceData?.exhibitorsLeadCount ?? 121) === 0) &&
+          +esData?._source?.exhibitingLeads !==
+            +microServiceData?.exhibitorsLeadCount
         ) {
           if (
             esData?._source?.exhibitingLeads !== undefined &&
