@@ -361,10 +361,12 @@ export class WorkerService {
         ) {
           let status = '';
           const event_status: string = event1Datafrom10times?.event_status;
-          if (event_status && event_status !== null)
+          if (event_status)
             if (event_status === 'P') status = 'POSTPONED';
             else if (event_status === 'C') status = 'CANCELLED';
             else if (event_status === 'U') status = 'UNVERIFIED';
+            else if (event_status === null || event_status === 'A')
+              status = 'ACTIVE';
           if (microServiceData?.status !== status) {
             data_do_not_match += `\n Event status not matched`;
             flagTowrite = true;
@@ -526,18 +528,20 @@ export class WorkerService {
           flagTowrite = true;
         }
         //  // console.log(" Company totalVisitor not matched");
+        // if (
+        //   event1Datafrom10times?.companycity?.trim() !=
+        //   microServiceData?.ownercity?.trim()
+        // ) {
+        //   data_do_not_match += `\n Company city not matched`;
+        //   flagTowrite = true;
+        // }
         if (
-          event1Datafrom10times?.companycity?.trim() !=
-          microServiceData?.ownercity?.trim()
+          event1Datafrom10times?.companycity?.toLowerCase().trim() !=
+            microServiceData?.ownercity?.toLowerCase().trim() &&
+          event1Datafrom10times?.companycountry?.toLowerCase().trim() !=
+            microServiceData?.ownercountry?.toLowerCase().trim()
         ) {
-          data_do_not_match += `\n Company city not matched`;
-          flagTowrite = true;
-        }
-        if (
-          event1Datafrom10times?.companycountry !=
-          microServiceData?.ownercountry?.trim()
-        ) {
-          data_do_not_match += `\n Company country not matched`;
+          data_do_not_match += `\n Company country/city not matched`;
           flagTowrite = true;
         }
         // //  // console.log("eventypeonMicro");
