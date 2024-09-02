@@ -6,10 +6,30 @@ export class PrismaMysqlService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    super();
+    super({
+      log: [
+        {
+          emit: 'event',
+          level: 'query',
+        },
+        {
+          emit: 'event',
+          level: 'info',
+        },
+        {
+          emit: 'event',
+          level: 'warn',
+        },
+        {
+          emit: 'event',
+          level: 'error',
+        },
+      ],
+    });
   }
   async onModuleInit() {
     await this.$connect();
+    console.log('10times db up');
 
     // this.$on(
     //   'query' as never,

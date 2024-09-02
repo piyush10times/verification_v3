@@ -6,5 +6,6 @@ import { PrismaMicroService } from './prisma.microservice';
 @Module({
   controllers: [],
   providers: [PrismaMysqlService, PrismaMicroService, ElasticsearchService],
+  exports: [PrismaMysqlService, PrismaMicroService, ElasticsearchService],
 })
 export class PrismaModule {}
