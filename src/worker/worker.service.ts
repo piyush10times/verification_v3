@@ -476,7 +476,7 @@ export class WorkerService {
         if (
           event1Datafrom10times?.profile !== undefined &&
           microServiceData?.ownerabout?.trim() !=
-            event1Datafrom10times?.profile?.trim()
+            event1Datafrom10times?.profile?.split('\n').join(',')?.trim()
         ) {
           data_do_not_match += `\n Company about not matched ${
             microServiceData?.ownerabout?.trim() +
