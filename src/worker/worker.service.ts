@@ -393,7 +393,7 @@ export class WorkerService {
         //   data_do_not_match += `\n Event website not matched`;
         //   flagTowrite = true;
         // }
-        console.log(event1Datafrom10times?.event_created);
+        // console.log(event1Datafrom10times?.event_created);
 
         const create = new Date(
           event1Datafrom10times?.event_created,
@@ -531,7 +531,15 @@ export class WorkerService {
         // //  // console.log("eventypeonMicro");
         const eventypeonMicro =
           microServiceData?.eventtype !== null
-            ? microServiceData?.eventtype?.split(',')
+            ? microServiceData?.eventtype
+                ?.split(',')
+                .filter(
+                  (val) =>
+                    val !== null &&
+                    val !== undefined &&
+                    val !== '' &&
+                    val.length > 0,
+                )
             : [];
         const event10timestype = esData?._source?.event_type_new;
         for (const data of event10timestype ?? []) {
@@ -551,13 +559,31 @@ export class WorkerService {
         const event10timesProduct =
           event1Datafrom10times?.productname !== null &&
           event1Datafrom10times?.productname !== undefined
-            ? event1Datafrom10times?.productname.split(',')
+            ? event1Datafrom10times?.productname
+                .split(',')
+                .filter(
+                  (val) =>
+                    val !== null &&
+                    val !== undefined &&
+                    val !== '' &&
+                    val.length > 0,
+                )
             : [];
         const eventagonMicro =
           microServiceData?.eventtag !== null &&
           microServiceData?.eventtag !== undefined
-            ? microServiceData?.eventtag?.split(',')
+            ? microServiceData?.eventtag
+                ?.split(',')
+                .filter(
+                  (val) =>
+                    val !== null &&
+                    val !== undefined &&
+                    val !== '' &&
+                    val.length > 0,
+                )
             : [];
+        console.log(event10timesProduct, eventagonMicro);
+
         for (const data of event10timesProduct ?? []) {
           let notMatch = true;
           for (const d2 of eventagonMicro ?? []) {

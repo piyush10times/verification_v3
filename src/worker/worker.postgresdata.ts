@@ -140,7 +140,7 @@ export class MicroDataRetriver {
     left JOIN "_AllEventToCategory" ec on e.id = ec."A"
     LEFT join "Category" cat on ec."B" = cat.id
     left JOIN "_AllEventToTag" at on e.id = at."A"
-    left JOIN "Tag" tg on at."B" = tg.name
+    left JOIN "Tag" tg on at."B" = tg.id
     WHERE
     e."sourceId" in(${ids})
     GROUP BY
