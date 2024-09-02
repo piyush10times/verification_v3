@@ -888,11 +888,12 @@ export class WorkerService {
             flagTowrite = true;
           }
         }
-        if (flagTowrite)
+        if (flagTowrite) {
           await fs.promises.appendFile(
             fileDir + 'data_mismatched.txt',
             `${data_do_not_match},\n}`,
           );
+        }
         // break;
       }
       return 'done';
