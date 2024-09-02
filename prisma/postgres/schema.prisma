@@ -1,0 +1,357 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/postgres/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PG_URL")
+}
+
+model AllEvent {
+  id                                  String                    @id
+  name                                String?
+  eventIPId                           String?
+  venueLocationId                     String?
+  startDateTime                       DateTime?
+  endDateTime                         DateTime?
+  website                             String?
+  bannerUrl                           String?
+  logoUrl                             String?
+  description                         String?
+  shortDescription                    String?
+  shortName                           String?
+  status                              EVENT_STATUS?             @default(ACTIVE)
+  maturity                            Int?                      @default(0)
+  localTimezone                       String?
+  isForcasted                         Boolean?
+  eventRank                           Int?                      @default(0)
+  localRank                           Int?                      @default(0)
+  aviationRank                        Int?                      @default(0)
+  totalEstimatedAttendance            Int?                      @default(0)
+  estimatedVisitorUpper               Int?                      @default(0)
+  estimatedVisitorLower               Int?                      @default(0)
+  estimatedVisitorMean                Int?                      @default(0)
+  estimatedExhibitorUpper             Int?                      @default(0)
+  estimatedExhibitorLower             Int?                      @default(0)
+  estimatedExhibitorMean              Int?                      @default(0)
+  totalEstimatedAttendanceByOrganizer Int?                      @default(0)
+  audienceType                        EVENT_AUDIENCE_TYPE?
+  internationalAudience               Int?                      @default(0)
+  localAudience                       Int?                      @default(0)
+  score                               Int?                      @default(0)
+  estimatedSize                       String?
+  orgPriceLink                        String?
+  yoyGrowth                           Float?                    @default(0)
+  inboundScore                        Int?                      @default(0)
+  internationalScore                  Int?                      @default(0)
+  eventImpactScore                    Int?                      @default(0)
+  exhibitorsLeadCount                 Int?                      @default(0)
+  sponsorsLeadCount                   Int?                      @default(0)
+  speakersLeadCount                   Int?                      @default(0)
+  averageRating                       Float?                    @default(0)
+  editionCount                        Int?                      @default(0)
+  visitorTotalCount                   Int?                      @default(0)
+  exhibitorTotalCount                 Int?                      @default(0)
+  totalFollowersCount                 Int?                      @default(0)
+  socialMediaLinks                    Json?
+  eventPageUrl                        String?
+  frequency                           String?
+  frequencyAccuracy                   Int?                      @default(0)
+  reputationScore                     Int?                      @default(0)
+  repeatSentiment                     Int?                      @default(0)
+  reputationSentiment                 Float?                    @default(0)
+  format                              EVENT_FORMAT?
+  entryType                           ENTRY_TYPE?
+  ownerId                             String?
+  ownerSourceId                       String?
+  createdAt                           DateTime                  @default(now())
+  updatedAt                           DateTime                  @default(now())
+  publishStatus                       String?
+  source                              String
+  sourceId                            Int
+  keywords                            String?
+  venueCoordinates                    Unsupported("geography")?
+  companyDomain                       String?
+  futureExpectedEndDate               DateTime?
+  futureExpectedStartDate             DateTime?
+  EventIP                             EventIP?                  @relation(fields: [eventIPId], references: [id])
+  Company                             Company?                  @relation(fields: [ownerId], references: [id])
+  Location                            Location?                 @relation(fields: [venueLocationId], references: [id])
+  AttendancePerDay                    AttendancePerDay[]
+  EventRanking                        EventRanking[]
+  EventTicket                         EventTicket[]
+  Category                            Category[]
+  EventType                           EventType[]
+  Tag                                 Tag[]
+
+  @@unique([source, sourceId])
+  @@index([averageRating], map: "average_rating")
+  @@index([createdAt], map: "created_at")
+  @@index([editionCount], map: "edition_count")
+  @@index([endDateTime], map: "end_start")
+  @@index([estimatedVisitorMean], map: "estimated_visitor_mean")
+  @@index([name, shortName], map: "event_name")
+  @@index([startDateTime], map: "event_start")
+  @@index([format], map: "format")
+  @@index([frequency], map: "frequency")
+  @@index([venueCoordinates], map: "idx_venue_coordinates", type: Gist)
+  @@index([keywords(ops: raw("gin_trgm_ops"))], map: "keywords", type: Gin)
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "name_pg", type: Gin)
+  @@index([ownerId], map: "ownerId")
+  @@index([repeatSentiment], map: "repeat_sentiment")
+  @@index([reputationSentiment], map: "reputation_sentiment")
+  @@index([score], map: "score")
+  @@index([venueLocationId], map: "venue_location")
+  @@index([venueLocationId], map: "venue_location_id")
+}
+
+model AttendancePerDay {
+  id         String   @id
+  date       DateTime
+  attendance Int
+  eventId    String
+  AllEvent   AllEvent @relation(fields: [eventId], references: [id])
+}
+
+model Category {
+  id           String         @id
+  name         String
+  slug         String         @unique
+  description  String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now())
+  id_10x       String?        @unique
+  isGroup      Boolean?
+  EventRanking EventRanking[]
+  Tag          Tag[]
+  AllEvent     AllEvent[]
+
+  @@index([name], map: "category_name")
+}
+
+model Company {
+  id               String     @id
+  name             String?
+  website          String?
+  domain           String?
+  locationId       String?
+  address          String?
+  logoUrl          String?
+  eventCount       Int?       @default(0)
+  socialMediaLinks Json?
+  about            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @default(now())
+  source           String
+  sourceId         String
+  totalExhibit     Int?       @default(0)
+  totalSponsor     Int?       @default(0)
+  totalVisitor     Int?       @default(0)
+  AllEvent         AllEvent[]
+  Location         Location?  @relation(fields: [locationId], references: [id])
+  EventIP          EventIP[]
+
+  @@unique([source, sourceId])
+  @@index([id], map: "id_company")
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "name_company", type: Gin)
+  @@index([website(ops: raw("gin_trgm_ops"))], map: "wesite_company", type: Gin)
+}
+
+model Designation {
+  id          String   @id
+  name        String
+  alias_of    String?
+  spelling_of String?
+  role        String?
+  department  String?
+  id_10x      String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  @@index([department(ops: raw("gin_trgm_ops"))], map: "department_trgm_idx", type: Gin)
+  @@index([role(ops: raw("gin_trgm_ops"))], map: "role_trgm_idx", type: Gin)
+}
+
+model EventIP {
+  id                String     @id
+  name              String
+  website           String?
+  logoUrl           String?
+  yoyGrowth         Float?     @default(0)
+  frequency         String?
+  frequencyAccuracy Int?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @default(now())
+  source            String
+  sourceId          String
+  AllEvent          AllEvent[]
+  Company           Company[]
+
+  @@unique([source, sourceId])
+}
+
+model EventRanking {
+  id         String    @id
+  eventId    String?
+  countryId  String?
+  categoryId String?
+  rank       Int
+  source     String
+  sourceId   String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  Location   Location? @relation(fields: [countryId], references: [id])
+  AllEvent   AllEvent? @relation(fields: [eventId], references: [id])
+
+  @@unique([eventId, countryId, categoryId])
+}
+
+model EventTicket {
+  id        String   @id
+  eventId   String
+  name      String?
+  type      String?
+  currency  String?
+  price     Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  source    String
+  sourceId  String
+  AllEvent  AllEvent @relation(fields: [eventId], references: [id])
+
+  @@unique([source, sourceId])
+}
+
+model EventType {
+  id             String           @id
+  name           String
+  slug           String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now())
+  eventGroupType EVENT_GROUP_TYPE
+  id_10x         String?          @unique
+  AllEvent       AllEvent[]
+
+  @@index([id], map: "ID_EventType")
+}
+
+model Location {
+  id                                          String         @id
+  id_10x                                      String?        @unique
+  name                                        String?
+  alias                                       String?
+  locationType                                LOCATION_TYPE
+  area                                        Float?
+  venueId                                     String?
+  address                                     String?
+  cityId                                      String?
+  stateId                                     String?
+  countryId                                   String?
+  latitude                                    String?
+  longitude                                   String?
+  venueCategoryId                             String?
+  website                                     String?
+  utc_offset                                  String?
+  timezone                                    String?
+  geometry                                    String?
+  phonecode                                   String?
+  currency                                    String?
+  continent                                   String?
+  regions                                     String[]
+  postalcode                                  String?
+  published                                   Int?           @db.SmallInt
+  AllEvent                                    AllEvent[]
+  Company                                     Company[]
+  EventRanking                                EventRanking[]
+  Location_Location_cityIdToLocation          Location?      @relation("Location_cityIdToLocation", fields: [cityId], references: [id])
+  other_Location_Location_cityIdToLocation    Location[]     @relation("Location_cityIdToLocation")
+  Location_Location_countryIdToLocation       Location?      @relation("Location_countryIdToLocation", fields: [countryId], references: [id])
+  other_Location_Location_countryIdToLocation Location[]     @relation("Location_countryIdToLocation")
+  Location_Location_stateIdToLocation         Location?      @relation("Location_stateIdToLocation", fields: [stateId], references: [id])
+  other_Location_Location_stateIdToLocation   Location[]     @relation("Location_stateIdToLocation")
+  VenueCategory                               VenueCategory? @relation(fields: [venueCategoryId], references: [id])
+  Location_Location_venueIdToLocation         Location?      @relation("Location_venueIdToLocation", fields: [venueId], references: [id])
+  other_Location_Location_venueIdToLocation   Location[]     @relation("Location_venueIdToLocation")
+
+  @@index([cityId], map: "cityid_location")
+  @@index([countryId], map: "countryid_location")
+  @@index([id], map: "id_location")
+  @@index([name, alias], map: "location_name")
+  @@index([locationType], map: "location_type")
+  @@index([regions], map: "region_location", type: Gin)
+}
+
+model Tag {
+  id         String     @id
+  name       String
+  slug       String
+  categoryId String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now())
+  id_10x     String?    @unique
+  Category   Category?  @relation(fields: [categoryId], references: [id])
+  AllEvent   AllEvent[]
+
+  @@index([id], map: "ID_Tag")
+  @@index([name], map: "tag_name")
+}
+
+model VenueCategory {
+  id        String     @id
+  name      String
+  slug      String     @unique
+  id_10x    String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+  Location  Location[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+enum ENTRY_TYPE {
+  FREE
+  PAID
+  FREE_AND_PAID
+}
+
+enum EVENT_AUDIENCE_TYPE {
+  B2B
+  B2C
+}
+
+enum EVENT_FORMAT {
+  OFFLINE
+  HYBRID
+  ONLINE
+}
+
+enum EVENT_GROUP_TYPE {
+  ATTENDED
+  NON_ATTENDED
+  UNSCHEDULED
+}
+
+enum EVENT_STATUS {
+  POSTPONED
+  CANCELLED
+  PREDICTED
+  UNVERIFIED
+  ACTIVE
+}
+
+enum LOCATION_TYPE {
+  COUNTRY
+  STATE
+  CITY
+  VENUE
+  SUB_VENUE
+}
