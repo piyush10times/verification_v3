@@ -163,11 +163,10 @@ export class MysqLdata {
           ep.event event_id,
             GROUP_CONCAT(
               DISTINCT p.name
-              ORDER BY p.name ASC SEPARATOR ', '
+              ORDER BY p.name ASC SEPARATOR ','
             ) AS productname
-          FROM
-          event_products ep 
-          left JOIN event e on ep.event=e.id and ep.edition=e.event_edition
+          FROM event e
+          left JOIN event_products ep  on e.id=ep.event ande.event_edition= ep.edition
           LEFT JOIN
             product p ON ep.product=p.id And ep.edition in (${edition500data
               .map((val) => {

@@ -539,7 +539,8 @@ export class WorkerService {
           for (const d2 of eventypeonMicro ?? []) {
             // console.log(d2, data);
 
-            if (d2?.trim() === data?.trim()) notMatch = false;
+            if (d2?.toLowerCase().trim() === data?.toLowerCase().trim())
+              notMatch = false;
           }
           if (notMatch) {
             data_do_not_match += `\n Event type not matched`;
@@ -560,7 +561,8 @@ export class WorkerService {
         for (const data of event10timesProduct ?? []) {
           let notMatch = true;
           for (const d2 of eventagonMicro ?? []) {
-            if (d2.trim() === data.trim()) notMatch = false;
+            if (d2.toLowerCase().trim() === data.toLowerCase().trim())
+              notMatch = false;
           }
           if (notMatch) {
             data_do_not_match += `\n tag/product not matched`;
