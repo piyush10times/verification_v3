@@ -88,7 +88,7 @@ export class WorkerService {
           Record<string, EventDetails>,
           Record<string, EventDetailsMicro>,
           Record<string, EventMetrics>,
-        ] = await await Promise.all([
+        ] = await Promise.all([
           this.dataRetriver.mysqlData(ids),
           this.dataRetriver2.getMicroserviceData(ids),
           this.dataRetriver3.getEsData(ids),
@@ -669,8 +669,9 @@ export class WorkerService {
             microServiceData?.reputationSentiment + ''
         ) {
           if (
-            esData?._source?.reputationSentiment !== undefined &&
-            microServiceData?.reputationSentiment !== '-888888'
+            esData?._source?.reputationSentiment !== null &&
+            microServiceData?.reputationSentiment !== '-888888' &&
+            microServiceData?.reputationSentiment !== '0'
           )
             data_do_not_match += `\n Event reputationSentiment not matched  ${
               esData?._source?.reputationSentiment +
@@ -763,6 +764,7 @@ export class WorkerService {
             }`;
           flagTowrite = true;
         }
+
         if (
           (esData?._source?.total_edition ?? '') !==
           (microServiceData?.editionCount ?? '')

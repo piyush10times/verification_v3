@@ -34,6 +34,7 @@ export class EsDataRetriver {
           'inboundAudience',
         ],
         body: {
+          size: 1000,
           query: {
             bool: {
               must: [
