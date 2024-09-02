@@ -16,8 +16,8 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
 
   public async ping() {
     try {
-      const response = await this.client.ping();
-      console.log('Elasticsearch cluster is up!', response);
+      await this.client.ping();
+      console.log('Elasticsearch cluster is up!');
     } catch (error) {
       console.error('Elasticsearch cluster is down!', error);
     }
