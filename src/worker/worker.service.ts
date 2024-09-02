@@ -44,6 +44,7 @@ export class WorkerService {
           difference: totalNumberOfresult - countOfEVentOnMicro,
         }),
       );
+      fs.promises.writeFile(fileDir + 'data_mismatched.txt', ``);
       await this.post.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS  Event10vsMicroMapping (
     microEventId VARCHAR(255),
@@ -55,6 +56,7 @@ export class WorkerService {
       const limit: number = 500;
       let offset: number = 0;
       let totalresultGet: number = 0;
+      console.time('500 Data');
       while (true) {
         if (breakLoop) {
           break;
@@ -68,7 +70,7 @@ export class WorkerService {
         ORDER BY event.id ASC 
         LIMIT ${limit};
       `)) as { ids: number }[];
-        if (id.length < 500) breakLoop = true;
+        if (id.length < limit) breakLoop = true;
 
         console.log(
           'first eventId=> ',
@@ -81,32 +83,33 @@ export class WorkerService {
         // console.log(query);
         const ids: string = id.map((val) => Number(val.ids)).join(',');
         // console.log(ids);
-        console.time('500 Data');
+
         const [mysql500data, micro, es]: [
           Record<string, EventDetails>,
           Record<string, EventDetailsMicro>,
           Record<string, EventMetrics>,
-        ] = await Promise.all([
+        ] = await await Promise.all([
           this.dataRetriver.mysqlData(ids),
           this.dataRetriver2.getMicroserviceData(ids),
           this.dataRetriver3.getEsData(ids),
         ]);
-        await this.comapre({
+        this.comapre({
           esEventJson: es,
           ids: ids.split(','),
           microServiceEventJson: micro,
           tentimesEventJson: mysql500data,
         });
-        console.timeEnd('500 Data');
+
         console.log('mysql500data');
         offset = id[id.length - 1].ids;
         console.log('last eventId=> ', offset);
         totalresultGet += id.length;
 
         console.log('total==> ', totalresultGet);
-        break;
+        // break;
       }
-      // process.exit(0);
+      console.timeEnd('500 Data');
+      process.exit(0);
     } catch (error) {
       console.error(error);
       await fs.promises.writeFile(
@@ -121,7 +124,7 @@ export class WorkerService {
       const fileDir: string = './logs/';
       let data_do_not_match: string = '';
       let flagTowrite: boolean = false;
-      console.log(data?.ids.length);
+      // console.log(data?.ids.length);
 
       for (const element of data?.ids) {
         // await fs.writeFileSync(
@@ -152,11 +155,11 @@ export class WorkerService {
         // console.log(element, data?.esEventJson[element + ""]);
         const event1Datafrom10times: EventDetails =
           data?.tentimesEventJson[element];
-        delete data?.tentimesEventJson[element];
+        // delete data?.tentimesEventJson[element];
         //  // console.log("microServiceData");
         const microServiceData: EventDetailsMicro =
           data?.microServiceEventJson[element];
-        delete data?.microServiceEventJson[element];
+        // delete data?.microServiceEventJson[element];
         // console.log(microServiceData);
 
         await this.post
@@ -179,7 +182,7 @@ export class WorkerService {
         // }
         const esData: EventMetrics = data?.esEventJson[element];
 
-        delete data?.esEventJson[element];
+        // delete data?.esEventJson[element];
         // for (const d1 of esAlldata) {
         //   if (element.ids === +(d1?._source?.id ?? "-111")) {
         //     esData = d1.;
@@ -187,49 +190,42 @@ export class WorkerService {
         //     break;
         //   }
         // }
-        // console.log(esData);
+        // console.log({...event1Datafrom10times,...esData},{...microServiceData});
         // const esData = es10timesdata.body.hits.hits[0] as EventEsSource;
-        // data_do_not_match = `\n\nEventId at 10times-> ${element} :: EventId at MicroService-> ${microServiceData.id}: \n{`;
+        data_do_not_match = '';
+        data_do_not_match = `\n\nEventId at 10times-> ${element} :: EventId at MicroService-> ${microServiceData.id}: \n{`;
         if (
-          // microServiceData?.name &&
-          // event1Datafrom10times?.event_name &&
-          microServiceData?.name?.trim() !=
-          event1Datafrom10times?.event_name?.trim()
+          microServiceData?.name !== null &&
+          event1Datafrom10times?.event_name !== null &&
+          microServiceData?.name?.trim() !==
+            event1Datafrom10times?.event_name?.trim()
         ) {
           data_do_not_match += `\n Event name not matched`;
           flagTowrite = true;
         }
-        console.log(
-          ' Event startdatetime not matched',
-          // microServiceData?.startDateTime?.toISOString() !=
-          //   event1Datafrom10times?.edition_start_date?.toISOString(),
-          // (microServiceData?.startDateTime).toISOString() ==
-          //   (event1Datafrom10times?.edition_start_date).toISOString(),
-          microServiceData?.startdatetime,
-          event1Datafrom10times?.edition_start_date,
-        );
+        // console.log(
+        //   ' Event startdatetime not matched',
+        //   // microServiceData?.startDateTime?.toISOString() !=
+        //   //   event1Datafrom10times?.edition_start_date?.toISOString(),
+        //   // (microServiceData?.startDateTime).toISOString() ==
+        //   //   (event1Datafrom10times?.edition_start_date).toISOString(),
+        //   microServiceData?.startdatetime.toISOString() !==
+        //     event1Datafrom10times?.edition_start_date.toISOString(),
+        // );
         if (
-          // microServiceData?.startdatetime &&
-          // event1Datafrom10times?.edition_start_date &&
-          new Date(
-            microServiceData?.startdatetime ?? '1885-02-04',
-          ).toISOString() !==
-          new Date(
-            event1Datafrom10times?.edition_start_date ?? '1885-02-07',
-          ).toISOString()
+          microServiceData?.startdatetime !== null &&
+          event1Datafrom10times?.edition_start_date !== null &&
+          microServiceData?.startdatetime.toISOString() !==
+            event1Datafrom10times?.edition_start_date.toISOString()
         ) {
           data_do_not_match += `\n Event startDateTime not matched`;
           flagTowrite = true;
         }
         if (
-          // microServiceData?.enddatetime &&
-          // event1Datafrom10times?.edition_end_date &&
-          new Date(
-            microServiceData?.enddatetime ?? '1885-02-04',
-          ).toISOString() !==
-          new Date(
-            event1Datafrom10times?.edition_end_date ?? '1885-02-08',
-          ).toISOString()
+          microServiceData?.enddatetime !== null &&
+          event1Datafrom10times?.edition_end_date !== null &&
+          microServiceData?.enddatetime.toISOString() !==
+            event1Datafrom10times?.edition_end_date.toISOString()
         ) {
           data_do_not_match += `\n Event endDateTime not matched`;
           flagTowrite = true;
@@ -274,7 +270,7 @@ export class WorkerService {
         if (
           (microServiceData?.score !== null ||
             event1Datafrom10times?.event_score !== null) &&
-          microServiceData?.score != event1Datafrom10times?.event_score
+          microServiceData?.score !== event1Datafrom10times?.event_score
         ) {
           data_do_not_match += `\n Event score not matched`;
           flagTowrite = true;
@@ -342,7 +338,7 @@ export class WorkerService {
             event1Datafrom10times?.event_audience === null
               ? 8
               : +event1Datafrom10times?.event_audience;
-          if (audience != temp) {
+          if (audience !== temp) {
             data_do_not_match += `\n Event event_audience not matched`;
             flagTowrite = true;
           }
@@ -353,29 +349,35 @@ export class WorkerService {
         ) {
           let status = '';
           const event_status: string = event1Datafrom10times?.event_status;
-          if (event_status && event_status != null)
-            if (event_status == 'P') status = 'POSTPONED';
-            else if (event_status == 'C') status = 'CANCELLED';
-            else if (event_status == 'U') status = 'UNVERIFIED';
-          if (microServiceData?.status != status) {
+          if (event_status && event_status !== null)
+            if (event_status === 'P') status = 'POSTPONED';
+            else if (event_status === 'C') status = 'CANCELLED';
+            else if (event_status === 'U') status = 'UNVERIFIED';
+          if (microServiceData?.status !== status) {
             data_do_not_match += `\n Event status not matched`;
             flagTowrite = true;
           }
         }
         if (microServiceData?.format !== null) {
-          let eventFormat = 'None';
+          let eventFormat = 'OFFLINE';
 
-          if (esData?._id != null) {
+          if (esData?._id !== null) {
             const field_hybrid: number =
               esData?._source?.hybrid !== null ? esData?._source?.hybrid : -11;
             const field_city: number =
               esData?._source?.city !== null ? esData?._source?.city : -11;
 
-            if (field_city != null && field_city === 1) eventFormat = 'ONLINE';
-            else if (field_hybrid != null && field_hybrid == 1)
+            if (field_city !== null && field_city === 1) eventFormat = 'ONLINE';
+            else if (field_hybrid !== null && field_hybrid === 1)
               eventFormat = 'HYBRID';
             else eventFormat = 'OFFLINE';
           }
+          // console.log(
+          //   microServiceData?.format,
+          //   esData?._source?.hybrid,
+          //   esData?._source?.city,
+          // );
+
           if (microServiceData?.format !== eventFormat) {
             data_do_not_match += `\n Event eventFormat not matched`;
             flagTowrite = true;
@@ -391,26 +393,29 @@ export class WorkerService {
         //   data_do_not_match += `\n Event website not matched`;
         //   flagTowrite = true;
         // }
+        // console.log(event1Datafrom10times,event1Datafrom10times?.event_created);
+
         const create = new Date(
-          event1Datafrom10times?.event_created ?? '1858-12-01',
+          event1Datafrom10times?.event_created,
         ).toISOString();
         const NAMESPACE = '27290f87-1a9e-5afe-8833-31fb5d5fc81b'; // You need to provide a namespace UUID for v5
-        const name = `${event1Datafrom10times?.event_id ?? '-878'}-${create
+        const name = `${event1Datafrom10times?.event_id}-${create
           .substring(0, create.length - 5)
           .replace('T', ' ')
           .replace('Z', '')}`;
         const id = v5(name, NAMESPACE);
         // console.log(
-        //   "Generated UUID v5:",
+        //   'Generated UUID v5:',
         //   id,
         //   name,
         //   microServiceData.id,
         //   create
         //     .substring(0, create.length - 5)
-        //     .replace("T", " ")
-        //     .replace("Z", "")
+        //     .replace('T', ' ')
+        //     .replace('Z', ''),
         // );
-        if (microServiceData?.id?.trim() != id.trim()) {
+
+        if (microServiceData?.id?.trim() !== id.trim()) {
           data_do_not_match += `\n Event uuid not matched`;
           flagTowrite = true;
         }
@@ -481,14 +486,15 @@ export class WorkerService {
           flagTowrite = true;
         }
         if (
-          microServiceData?.logoUrl?.trim() !=
+          microServiceData?.ownerlogourl?.trim() !=
           event1Datafrom10times?.companylogo?.trim()
         ) {
           data_do_not_match += `\n Company logoUrl not matched`;
           flagTowrite = true;
         }
         if (
-          microServiceData?.totalExhibit != event1Datafrom10times?.total_exhibit
+          microServiceData?.totalExhibit !==
+          event1Datafrom10times?.total_exhibit
         ) {
           data_do_not_match += `\n Company totalExhibit not matched`;
           flagTowrite = true;
@@ -531,7 +537,7 @@ export class WorkerService {
         for (const data of event10timestype ?? []) {
           let notMatch = true;
           for (const d2 of eventypeonMicro ?? []) {
-            console.log(d2, data);
+            // console.log(d2, data);
 
             if (d2?.trim() === data?.trim()) notMatch = false;
           }
@@ -562,13 +568,13 @@ export class WorkerService {
             break;
           }
         }
-        if (
-          event1Datafrom10times?.ecity?.trim() !=
-          microServiceData?.eventcityname?.trim()
-        ) {
-          data_do_not_match += `\n Event cityname not matched`;
-          flagTowrite = true;
-        }
+        // if (
+        //   event1Datafrom10times?.ecity?.trim() !=
+        //   microServiceData?.eventcityname?.trim()
+        // ) {
+        //   data_do_not_match += `\n Event cityname not matched`;
+        //   flagTowrite = true;
+        // }
         if (
           event1Datafrom10times?.venueaddress?.trim() !=
           microServiceData?.venueaddress?.trim()
@@ -606,20 +612,20 @@ export class WorkerService {
             flagTowrite = true;
           }
         }
-        if (
-          event1Datafrom10times?.ecountry?.trim() !=
-          microServiceData?.eventcountryname?.trim()
-        ) {
-          data_do_not_match += `\n Event countryname not matched`;
-          flagTowrite = true;
-        }
-        if (
-          event1Datafrom10times?.ecity?.trim() !=
-          microServiceData?.eventcityname?.trim()
-        ) {
-          data_do_not_match += `\n Event city not matched`;
-          flagTowrite = true;
-        }
+        // if (
+        //   event1Datafrom10times?.ecountry?.trim() !=
+        //   microServiceData?.eventcountryname?.trim()
+        // ) {
+        //   data_do_not_match += `\n Event countryname not matched`;
+        //   flagTowrite = true;
+        // }
+        // if (
+        //   event1Datafrom10times?.ecity?.trim() !=
+        //   microServiceData?.eventcityname?.trim()
+        // ) {
+        //   data_do_not_match += `\n Event city not matched`;
+        //   flagTowrite = true;
+        // }
         if (
           (esData?._source?.yoyGrowth !== undefined ||
             microServiceData?.yoyGrowth === 0) &&
@@ -627,7 +633,7 @@ export class WorkerService {
         ) {
           if (
             esData?._source?.yoyGrowth !== undefined &&
-            microServiceData?.yoyGrowth + '' != 0 + ''
+            microServiceData?.yoyGrowth !== 0
           ) {
             data_do_not_match += `\n Event yoyGrowth not matched  ${
               esData?._source?.yoyGrowth +
@@ -640,13 +646,13 @@ export class WorkerService {
         }
         if (
           (esData?._source?.repeatSentiment !== undefined ||
-            microServiceData?.repeatSentiment == '0') &&
+            microServiceData?.repeatSentiment === 0) &&
           esData?._source?.repeatSentiment !=
             microServiceData?.repeatSentiment + ''
         ) {
           if (
             esData?._source?.repeatSentiment !== undefined &&
-            microServiceData?.repeatSentiment + '' != 0 + ''
+            microServiceData?.repeatSentiment !== 0
           )
             data_do_not_match += `\n Event repeatSentiment not matched ${
               esData?._source?.repeatSentiment +
@@ -658,13 +664,13 @@ export class WorkerService {
         }
         if (
           (esData?._source?.reputationSentiment !== undefined ||
-            microServiceData?.reputationSentiment == '0') &&
+            microServiceData?.reputationSentiment === '-8989898') &&
           esData?._source?.reputationSentiment !=
             microServiceData?.reputationSentiment + ''
         ) {
           if (
             esData?._source?.reputationSentiment !== undefined &&
-            microServiceData?.reputationSentiment + '' != 0 + ''
+            microServiceData?.reputationSentiment !== '-888888'
           )
             data_do_not_match += `\n Event reputationSentiment not matched  ${
               esData?._source?.reputationSentiment +
@@ -682,32 +688,32 @@ export class WorkerService {
         ) {
           if (
             esData?._source?.exhibitingLeads !== undefined &&
-            microServiceData?.exhibitorsLeadCount + '' != 0 + ''
+            microServiceData?.exhibitorsLeadCount !== 0
           )
             data_do_not_match += `\n Event exhibitingLeads not matched`;
           flagTowrite = true;
         }
         if (
           (esData?._source?.sponsoringLeads !== undefined ||
-            (microServiceData?.sponsorsLeadCount ?? 545) == 0) &&
+            (microServiceData?.sponsorsLeadCount ?? 545) === 0) &&
           esData?._source?.sponsoringLeads !==
             microServiceData?.sponsorsLeadCount
         ) {
           if (
             esData?._source?.sponsoringLeads !== undefined &&
-            microServiceData?.sponsorsLeadCount + '' != 0 + ''
+            microServiceData?.sponsorsLeadCount !== 0
           )
             data_do_not_match += `\n Event sponsorsLeadCount not matched`;
           flagTowrite = true;
         }
         if (
           (esData?._source?.speakingLeads !== undefined ||
-            (microServiceData?.speakersLeadCount ?? 545) == 0) &&
+            (microServiceData?.speakersLeadCount ?? 545) === 0) &&
           esData?._source?.speakingLeads !== microServiceData?.speakersLeadCount
         ) {
           if (
             esData?._source?.speakingLeads !== undefined &&
-            microServiceData?.speakersLeadCount + '' != 0 + ''
+            microServiceData?.speakersLeadCount !== 0
           )
             data_do_not_match += `\n Event speakingLeads not matched`;
           flagTowrite = true;
@@ -715,37 +721,39 @@ export class WorkerService {
         const fsdate =
           esData?._source?.futureExpexctedEndDate !== null &&
           esData?._source?.futureExpexctedEndDate !== undefined
-            ? esData?._source?.futureExpexctedEndDate
-            : '1885-02-25';
+            ? new Date(esData?._source?.futureExpexctedEndDate).toISOString()
+            : '1885-02-25T00.00.00.000Z';
         // console.log(fsdate);
         const mfsdate =
           microServiceData?.futureExpectedEndDate !== null &&
           microServiceData?.futureExpectedEndDate !== undefined
-            ? microServiceData?.futureExpectedEndDate
-            : '1885-02-25';
-        if (new Date(fsdate).toISOString() != new Date(mfsdate).toISOString()) {
+            ? microServiceData?.futureExpectedEndDate.toISOString()
+            : '1885-02-25T00.00.00.000Z';
+        if (fsdate !== mfsdate) {
           data_do_not_match += `\n Event futureExpectedEndDate not matched`;
           flagTowrite = true;
         }
         const mfedate =
           microServiceData?.futureExpectedStartDate !== null &&
           microServiceData?.futureExpectedStartDate !== undefined
-            ? microServiceData?.futureExpectedStartDate
+            ? microServiceData?.futureExpectedStartDate.toISOString()
             : '1885-02-25';
         const fedate =
           esData?._source?.futureExpexctedStartDate !== null &&
           esData?._source?.futureExpexctedStartDate !== undefined
             ? esData?._source?.futureExpexctedStartDate
             : '1885-02-25';
-        // console.log(fedate);
-        if (new Date(fedate).toISOString() != new Date(mfedate).toISOString()) {
+        // console.log(fedate, mfedate);
+        if (
+          new Date(fedate).toISOString() !== new Date(mfedate).toISOString()
+        ) {
           data_do_not_match += `\n Event futureExpexctedStartDate not matched`;
           flagTowrite = true;
         }
         if (esData?._source?.avg_rating !== microServiceData?.averageRating) {
           if (
             esData?._source?.avg_rating !== undefined &&
-            microServiceData?.averageRating + '' != 0 + ''
+            microServiceData?.averageRating + '' !== 0 + ''
           )
             data_do_not_match += `\n Event averageRating not matched  ${
               esData?._source?.avg_rating +
@@ -756,7 +764,7 @@ export class WorkerService {
           flagTowrite = true;
         }
         if (
-          (esData?._source?.total_edition ?? '') !=
+          (esData?._source?.total_edition ?? '') !==
           (microServiceData?.editionCount ?? '')
         ) {
           data_do_not_match += `\n Event editionCount not matched`;
@@ -831,12 +839,12 @@ export class WorkerService {
             flagTowrite = true;
           }
         }
-        if (flagTowrite) console.log(data_do_not_match);
-        await fs.promises.appendFile(
-          fileDir + 'data_mismatched.txt',
-          `${event1Datafrom10times?.event_id},${microServiceData?.id},${data_do_not_match},\n`,
-        );
-        break;
+        if (flagTowrite)
+          await fs.promises.appendFile(
+            fileDir + 'data_mismatched.txt',
+            `${data_do_not_match},\n}`,
+          );
+        // break;
       }
       return 'done';
     } catch (error) {
@@ -1015,7 +1023,7 @@ export interface EventDetailsMicro {
   entryType: string | null;
   frequencyAccuracy: string | null;
   reputationScore: number | null;
-  repeatSentiment: string | null;
+  repeatSentiment: number | null;
   reputationSentiment: string | null;
   format: string | null;
   averageRating: number | null;

@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaMysqlService } from 'src/prisma/prisma.mysqldbservice';
+import * as _ from 'lodash';
 @Injectable()
 export class MysqLdata {
   constructor(private readonly mysql: PrismaMysqlService) {}
-  async mysqlData(ids: string) {
+  async mysqlData(ids: string): Promise<any> {
     try {
       console.time('mysql');
-      // console.log('data');
+      // console.log('ids',ids);
 
-      const event500Datafrom10times = (await this.mysql.$queryRaw`SELECT
+      const event500Datafrom10times = (await this.mysql.$queryRawUnsafe(`SELECT
             e.id AS event_id,
             e.city AS event_city,
             e.punchline AS event_punchline,
@@ -39,7 +40,8 @@ export class MysqLdata {
           WHERE
             e.id IN (${ids})
              order by e.id;
-          `) as EventDetails[];
+          `)) as EventDetails[];
+      // console.log(event500Datafrom10times);
       const edition500data = (await this.mysql.$queryRawUnsafe(`
                 SELECT
           e.id as event_id,
@@ -155,7 +157,7 @@ export class MysqLdata {
               })
               .filter((val) => val !== -11)
               .join(',')})
-            `)) as CompanyDetails[];
+              order by c.id `)) as CompanyDetails[];
       const product = (await this.mysql.$queryRawUnsafe(`
             SELECT
           ep.event event_id,
@@ -225,78 +227,100 @@ and            ee.id IN (${edition500data
                LEFT JOIN
             city ecity ON v.city = ecity.id 
             where ee.id is not null
-            GROUP BY v.id;`)) as Venue[];
-      //
-      const dataToReturn = {};
-      // for event table
-      for (const data of event500Datafrom10times) {
-        dataToReturn[data?.event_id + ''] = data;
-      }
-      // for event edition table
-      for (const data of edition500data) {
-        dataToReturn[data?.event_id + ''] = {
-          ...dataToReturn[data?.event_id + ''],
-          ...data,
-        };
-      }
-      // for comapny table
-      for (const data of edition500data) {
-        const temp = this.binarySearch(company, data?.company_id, 'company_id');
-        dataToReturn[data?.event_id + ''] = {
-          ...dataToReturn[data?.event_id + ''],
-          ...temp,
-        };
-      }
-      // for event edition other data table
-      for (const data of editionother500data) {
-        dataToReturn[data?.event_id + ''] = {
-          ...dataToReturn[data?.event_id + ''],
-          ...data,
-        };
-      }
-      // for category table
-      for (const data of category) {
-        dataToReturn[data?.event_id + ''] = {
-          ...dataToReturn[data?.event_id + ''],
-          ...data,
-        };
-      }
-      // for product table
-      for (const data of product) {
-        dataToReturn[data?.event_id + ''] = {
-          ...dataToReturn[data?.event_id + ''],
-          ...data,
-        };
-      }
-      // for ticket table
-      for (const data of ticket) {
-        dataToReturn[data?.event_id + ''] = {
-          ...dataToReturn[data?.event_id + ''],
-          ...data,
-        };
-      }
-      // for venue table
-      // console.log(venue);
+            GROUP BY ee.event;`)) as Venue[];
 
-      for (const data of edition500data) {
-        const temp = this.binarySearch(venue, data?.event_venue, 'venue_id');
-        // console.log('vwnue', temp);
+      // Create Maps for fast lookups
+      const companyMap = new Map<number, CompanyDetails>();
+      for (const comp of company) {
+        if (comp.company_id !== null && comp.company_id !== undefined) {
+          companyMap.set(comp.company_id, comp);
+        }
+      }
 
-        dataToReturn[data?.event_id + ''] = {
-          ...temp,
-          ...dataToReturn[data?.event_id + ''],
-        };
+      const venueMap = new Map<number, Venue>();
+      for (const ven of venue) {
+        if (ven.venue_id !== null && ven.venue_id !== undefined) {
+          venueMap.set(ven.venue_id, ven);
+        }
+      }
+
+      // Initialize dataToReturn with event data
+      const dataToReturn: Record<string, EventDetails> = {};
+      for (const event of event500Datafrom10times) {
+        dataToReturn[event.event_id + ''] = { ...event };
+      }
+
+      // Merge event edition data
+      for (const edition of edition500data) {
+        const eventKey = edition.event_id + '';
+        if (dataToReturn[eventKey]) {
+          await this.mergeData(dataToReturn[eventKey], edition);
+        }
+      }
+
+      // Merge edition other data
+      for (const other of editionother500data) {
+        const eventKey = other.event_id + '';
+        if (dataToReturn[eventKey]) {
+          await this.mergeData(dataToReturn[eventKey], other);
+        }
+      }
+
+      // Merge category data
+      for (const cat of category) {
+        const eventKey = cat.event_id + '';
+        if (dataToReturn[eventKey]) {
+          dataToReturn[eventKey]['categoryname'] = cat.categoryname;
+        }
+      }
+
+      // Merge product data
+      for (const prod of product) {
+        const eventKey = prod.event_id + '';
+        if (dataToReturn[eventKey]) {
+          dataToReturn[eventKey]['productname'] = prod.productname;
+        }
+      }
+
+      // Merge ticket data
+      for (const tick of ticket) {
+        const eventKey = tick.event_id + '';
+        if (dataToReturn[eventKey]) {
+          dataToReturn[eventKey]['ticket_type'] = tick.ticket_type;
+        }
+      }
+
+      // Merge company data
+      for (const edition of edition500data) {
+        const eventKey = edition.event_id + '';
+        const companyData = companyMap.get(edition.company_id || -1);
+        if (companyData && dataToReturn[eventKey]) {
+          await this.mergeData(dataToReturn[eventKey], companyData);
+        }
+      }
+
+      // Merge venue data
+      for (const edition of edition500data) {
+        const eventKey = edition.event_id + '';
+        const venueData = venueMap.get(edition.event_venue || -1);
+        if (venueData && dataToReturn[eventKey]) {
+          await this.mergeData(dataToReturn[eventKey], venueData);
+        }
       }
       console.timeEnd('mysql');
       // console.log(dataToReturn);
-      return dataToReturn;
+      return dataToReturn as Record<string, EventDetails>;
     } catch (error) {
       console.error(error);
 
-      return 'Mysql data retrive failed\n' + error;
+      return { 'Mysql data retrive failed\n': error };
     }
   }
-  binarySearch(arr: any[], target: number, id: string) {
+  private mergeData(target: any, source: any): any {
+    return _.merge(target, source);
+  }
+
+  async binarySearch(arr: any[], target: number, id: string) {
     let left = 0;
     let right = arr.length - 1;
 
@@ -334,7 +358,7 @@ export interface EventDetails {
   event_modified: Date | null;
   event_brand_id: number | null;
   event_type: string | null;
-  publish_status: boolean | null;
+  publish_status: number | null;
   visitors_total: number | null;
   exhibitors_total: number | null;
 }
@@ -393,5 +417,65 @@ export interface Venue {
 }
 export interface Ticket {
   event_id: number | null;
+  ticket_type: string | null;
+}
+
+export interface EventDetails {
+  event_id: number | null;
+  event_city: string | null;
+  event_punchline: string | null;
+  event_name: string | null;
+  event_abbr_name: string | null;
+  event_logo: string | null;
+  event_website: string | null;
+  event_url: string | null;
+  event_start_date: Date | null;
+  event_end_date: Date | null;
+  event_status: string | null;
+  event_score: number | null;
+  event_audience: number | null;
+  event_frequency: string | null;
+  event_created: Date | null;
+  event_modified: Date | null;
+  event_brand_id: number | null;
+  event_type: string | null;
+  publish_status: number | null;
+  visitors_total: number | null;
+  exhibitors_total: number | null;
+  event_edition_id: number | null;
+  event_facebook_id: string | null;
+  event_linkedin_id: string | null;
+  event_twitter_id: string | null;
+  event_twitter_hashtag: string | null;
+  event_google_id: string | null;
+  edition_website: string | null;
+  edition_start_date: Date | null;
+  edition_end_date: Date | null;
+  event_venue: number | null;
+  company_id: number | null;
+  description: string | null;
+  timing: Date | null;
+  stats: string | null;
+  categoryname: string | null;
+  companyname: string | null;
+  companywebsite: string | null;
+  companycity: string | null;
+  companycountry: string | null;
+  companyaddress: string | null;
+  facebook_id: string | null;
+  linkedin_id: string | null;
+  twitter_id: string | null;
+  profile: string | null;
+  companylogo: string | null;
+  companycreated: Date | null;
+  total_exhibit: number | null;
+  total_visitor: number | null;
+  total_sponsor: number | null;
+  productname: string | null;
+  venue_id: number | null;
+  venue_name: string | null;
+  venueaddress: string | null;
+  ecity: string | null;
+  ecountry: string | null;
   ticket_type: string | null;
 }
