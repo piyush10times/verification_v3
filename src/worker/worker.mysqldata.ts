@@ -166,7 +166,7 @@ export class MysqLdata {
               ORDER BY p.name ASC SEPARATOR ','
             ) AS productname
           FROM event e
-          left JOIN event_products ep  on e.id=ep.event ande.event_edition= ep.edition
+          left JOIN event_products ep  on e.id=ep.event and e.event_edition= ep.edition
           LEFT JOIN
             product p ON ep.product=p.id And ep.edition in (${edition500data
               .map((val) => {

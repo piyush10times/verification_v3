@@ -393,7 +393,7 @@ export class WorkerService {
         //   data_do_not_match += `\n Event website not matched`;
         //   flagTowrite = true;
         // }
-        // console.log(event1Datafrom10times,event1Datafrom10times?.event_created);
+        console.log(event1Datafrom10times?.event_created);
 
         const create = new Date(
           event1Datafrom10times?.event_created,
