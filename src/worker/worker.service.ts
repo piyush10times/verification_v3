@@ -582,7 +582,7 @@ export class WorkerService {
                     val.length > 0,
                 )
             : [];
-        console.log(event10timesProduct, eventagonMicro);
+        // console.log(event10timesProduct, eventagonMicro);
 
         for (const data of event10timesProduct ?? []) {
           let notMatch = true;
