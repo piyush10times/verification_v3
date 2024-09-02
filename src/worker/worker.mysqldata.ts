@@ -6,7 +6,7 @@ export class MysqLdata {
   async mysqlData(ids: string) {
     try {
       console.time('mysql');
-      console.log('data');
+      // console.log('data');
 
       const event500Datafrom10times = (await this.mysql.$queryRaw`SELECT
             e.id AS event_id,
