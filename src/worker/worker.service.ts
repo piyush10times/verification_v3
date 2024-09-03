@@ -384,11 +384,7 @@ export class WorkerService {
           if (event_status === 'P') status = 'POSTPONED';
           else if (event_status === 'C') status = 'CANCELLED';
           else if (event_status === 'U') status = 'UNVERIFIED';
-          else if (
-            !event_status ||
-            event_status === 'A'
-            // event_status === ''
-          )
+          else
             status = 'ACTIVE';
           if (microServiceData?.status !== status) {
             data_do_not_match += `\n Event status not matched`;
