@@ -31,17 +31,17 @@ export class PrismaMysqlService
     await this.$connect();
     console.log('10times db up');
 
-    // this.$on(
-    //   'query' as never,
-    //   (event: { query: string; params: string; duration: number }) => {
-    //     console.log('\n\nQuery:', event.query);
-    //     console.log('Params:', event.params);
-    //     console.log('Duration:' + event.duration + ' ms' + '\n\n');
-    //     // logger.info(`Query: ${event.query}`);
-    //     // logger.info(`Params: ${event.params}`);
-    //     // logger.info(`Duration: ${event.duration}ms/n`);
-    //   },
-    // );
+    this.$on(
+      'query' as never,
+      (event: { query: string; params: string; duration: number }) => {
+        console.log('\n\nQuery:', event.query);
+        console.log('Params:', event.params);
+        console.log('Duration:' + event.duration + ' ms' + '\n\n');
+        // logger.info(`Query: ${event.query}`);
+        // logger.info(`Params: ${event.params}`);
+        // logger.info(`Duration: ${event.duration}ms/n`);
+      },
+    );
   }
 
   async onModuleDestroy() {

@@ -30,17 +30,13 @@ export class MysqLdata {
             e.published AS publish_status,
             ee.visitors_total ,
             ee.exhibitors_total,
-             GROUP_CONCAT(
-              DISTINCT ete.eventtype_id
-              ORDER BY ete.eventtype_id ASC SEPARATOR ','
-            ) AS typemap
+             -1 as event_type
           FROM
             event e
           LEFT JOIN
             event_edition ee ON e.event_edition = ee.id
           LEFT JOIN
             attachment a ON e.logo = a.id
-             LEFT JOIN event_type_event ete on e.id=ete.event_id
           WHERE
             e.id IN (${ids})
              order by e.id;
@@ -240,18 +236,33 @@ and            ee.id IN (${edition500data
           venueMap.set(ven.venue_id, ven);
         }
       }
-
+      const typemap = (await this.mysql
+        .$queryRaw`SELECT event_id, GROUP_CONCAT(eventtype_id SEPARATOR ',') typenum
+      FROM event_type_event
+      where event_id in (${ids})
+      GROUP BY
+          event_id 
+`) as { event_id: number; typenum: string }[];
       // Initialize dataToReturn with event data
       const dataToReturn: Record<string, EventDetails> = {};
       for (const event of event500Datafrom10times) {
-        let temp: string[] = [];
-        for (const map of event.typemap.split(',')) {
+        let alltypeid: string = '';
+        for (const data of typemap) {
+          if (event.event_id === data.event_id) {
+            alltypeid = data.typenum;
+            break;
+          }
+        }
+        let temp: string[] = ['dsfdf', 'fczascf', 'sdfds'];
+        for (const map of alltypeid.split(',')) {
           if (eventTypeRecord[map]) temp.push(eventTypeRecord[map]);
         }
         dataToReturn[event.event_id + ''] = {
           ...event,
-          event_type: temp.join(','),
         };
+        if (temp.length > 0) {
+          dataToReturn[event.event_id + ''].event_type = temp.join(',');
+        }
       }
 
       // Merge event edition data
@@ -346,7 +357,6 @@ and            ee.id IN (${edition500data
 export interface EventDetails {
   event_id: number | null;
   event_city: string | null;
-  typemap: string | null;
   event_punchline: string | null;
   event_name: string | null;
   event_abbr_name: string | null;
