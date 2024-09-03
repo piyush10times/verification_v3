@@ -297,7 +297,7 @@ and            ee.id IN (${edition500data
       // Merge company data
       for (const edition of edition500data) {
         const eventKey = edition.event_id + '';
-        const companyData = companyMap.get(edition.company_id || -1);
+        const companyData = companyMap.get(edition.cpid || -1);
         if (companyData && dataToReturn[eventKey]) {
           await this.mergeData(dataToReturn[eventKey], companyData);
         }
@@ -379,7 +379,6 @@ export interface EventEditionDetails {
   edition_start_date: Date | null;
   edition_end_date: Date | null;
   event_venue: number | null;
-  company_id: number | null;
 }
 export interface Editionother500data {
   event_id: number | null;
