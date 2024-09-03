@@ -330,6 +330,8 @@ export class WorkerService {
             event1Datafrom10times?.publish_status === 2
           ) {
             pubNumber = 1;
+          } else if (event1Datafrom10times?.publish_status === 0) {
+            pubNumber = 0;
           }
           if (pubNumber !== microServiceData?.publishStatus) {
             data_do_not_match += `\n Event publishStatus not matched`;
