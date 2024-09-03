@@ -321,11 +321,20 @@ export class WorkerService {
         if (
           (microServiceData?.publishStatus !== null ||
             event1Datafrom10times?.publish_status !== null) &&
-          microServiceData?.publishStatus === 1 &&
+          [1, 0].indexOf(microServiceData?.publishStatus ?? 8) > 0 &&
           [1, 2, 0].indexOf(event1Datafrom10times?.publish_status ?? 8) > 0
         ) {
-          data_do_not_match += `\n Event publishStatus not matched`;
-          flagTowrite = true;
+          let pubNumber: number = -8;
+          if (
+            event1Datafrom10times?.publish_status === 1 ||
+            event1Datafrom10times?.publish_status === 2
+          ) {
+            pubNumber = 1;
+          }
+          if (pubNumber !== microServiceData?.publishStatus) {
+            data_do_not_match += `\n Event publishStatus not matched`;
+            flagTowrite = true;
+          }
         }
         // if (
         //   (microServiceData?.foll !== null ||
@@ -365,7 +374,11 @@ export class WorkerService {
             if (event_status === 'P') status = 'POSTPONED';
             else if (event_status === 'C') status = 'CANCELLED';
             else if (event_status === 'U') status = 'UNVERIFIED';
-            else if (event_status === null || event_status === 'A')
+            else if (
+              event_status ||
+              event_status === 'A' ||
+              event_status === ''
+            )
               status = 'ACTIVE';
           if (microServiceData?.status !== status) {
             data_do_not_match += `\n Event status not matched`;
@@ -377,9 +390,9 @@ export class WorkerService {
 
           if (esData?._id !== null) {
             const field_hybrid: number =
-              esData?._source?.hybrid !== null ? esData?._source?.hybrid : -11;
+              esData?._source?.hybrid !== null ? +esData?._source?.hybrid : -11;
             const field_city: number =
-              esData?._source?.city !== null ? esData?._source?.city : -11;
+              esData?._source?.city !== null ? +esData?._source?.city : -11;
 
             if (field_city !== null && field_city === 1) eventFormat = 'ONLINE';
             else if (field_hybrid !== null && field_hybrid === 1)
@@ -490,7 +503,7 @@ export class WorkerService {
         if (
           event1Datafrom10times?.profile !== undefined &&
           microServiceData?.ownerabout?.trim() !=
-            event1Datafrom10times?.profile?.split('\n').join(',')?.trim()
+            event1Datafrom10times?.profile?.split('\n').join('')?.trim()
         ) {
           data_do_not_match += `\n Company about not matched ${
             microServiceData?.ownerabout?.trim() +
@@ -507,22 +520,22 @@ export class WorkerService {
           flagTowrite = true;
         }
         if (
-          microServiceData?.totalExhibit !==
-          event1Datafrom10times?.total_exhibit
+          +microServiceData?.totalExhibit !==
+          +event1Datafrom10times?.total_exhibit
         ) {
           data_do_not_match += `\n Company totalExhibit not matched`;
           flagTowrite = true;
         }
         if (
-          microServiceData?.totalSponsor !==
-          event1Datafrom10times?.total_sponsor
+          +microServiceData?.totalSponsor !==
+          +event1Datafrom10times?.total_sponsor
         ) {
           data_do_not_match += `\n Company totalSponsor not matched`;
           flagTowrite = true;
         }
         if (
-          microServiceData?.totalVisitor !==
-          event1Datafrom10times?.total_visitor
+          +microServiceData?.totalVisitor !==
+          +event1Datafrom10times?.total_visitor
         ) {
           data_do_not_match += `\n Company totalVisitor not matched`;
           flagTowrite = true;
@@ -734,18 +747,18 @@ export class WorkerService {
             +microServiceData?.exhibitorsLeadCount
         ) {
           if (
-            esData?._source?.exhibitingLeads !== undefined &&
-            microServiceData?.exhibitorsLeadCount !== 0
+            +esData?._source?.exhibitingLeads !== undefined &&
+            +microServiceData?.exhibitorsLeadCount !== 0
           ) {
             data_do_not_match += `\n Event exhibitingLeads not matched`;
             flagTowrite = true;
           }
         }
         if (
-          (esData?._source?.sponsoringLeads !== undefined ||
+          (+esData?._source?.sponsoringLeads !== undefined ||
             (microServiceData?.sponsorsLeadCount ?? 545) === 0) &&
-          esData?._source?.sponsoringLeads !==
-            microServiceData?.sponsorsLeadCount
+          +esData?._source?.sponsoringLeads !==
+            +microServiceData?.sponsorsLeadCount
         ) {
           if (
             esData?._source?.sponsoringLeads !== undefined &&
@@ -761,8 +774,8 @@ export class WorkerService {
           esData?._source?.speakingLeads !== microServiceData?.speakersLeadCount
         ) {
           if (
-            esData?._source?.speakingLeads !== undefined &&
-            microServiceData?.speakersLeadCount !== 0
+            +esData?._source?.speakingLeads !== undefined &&
+            +microServiceData?.speakersLeadCount !== 0
           ) {
             data_do_not_match += `\n Event speakingLeads not matched`;
             flagTowrite = true;

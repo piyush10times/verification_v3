@@ -8,7 +8,7 @@ export class MysqLdata {
     try {
       console.time('mysql');
       // console.log('ids',ids);
-
+      //  event_type_event ->
       const event500Datafrom10times = (await this.mysql.$queryRawUnsafe(`SELECT
             e.id AS event_id,
             e.city AS event_city,
@@ -27,16 +27,20 @@ export class MysqLdata {
             e.created AS event_created,
             e.modified AS event_modified,
             e.brand_id AS event_brand_id,
-            e.event_type AS event_type,
             e.published AS publish_status,
             ee.visitors_total ,
-            ee.exhibitors_total
+            ee.exhibitors_total,
+             GROUP_CONCAT(
+              DISTINCT ete.eventtype_id
+              ORDER BY ete.eventtype_id ASC SEPARATOR ','
+            ) AS typemap
           FROM
             event e
           LEFT JOIN
             event_edition ee ON e.event_edition = ee.id
           LEFT JOIN
             attachment a ON e.logo = a.id
+             LEFT JOIN event_type_event ete on e.id=ete.event_id
           WHERE
             e.id IN (${ids})
              order by e.id;
@@ -159,31 +163,14 @@ export class MysqLdata {
               .join(',')})
               order by c.id `)) as CompanyDetails[];
       const product = (await this.mysql.$queryRawUnsafe(`
-            SELECT
-          ep.event event_id,
-            GROUP_CONCAT(
-              DISTINCT p.name
-              ORDER BY p.name ASC SEPARATOR ','
-            ) AS productname
+            select e.id,GROUP_CONCAT(DISTINCT p.name  SEPARATOR ',') AS productname
           FROM event e
-          left JOIN event_products ep  on e.id=ep.event and e.event_edition= ep.edition
+          left JOIN event_products ep  on e.id=ep.event and e.event_edition= ep.edition and ep.published = 1
           LEFT JOIN
-            product p ON ep.product=p.id And ep.edition in (${edition500data
-              .map((val) => {
-                if (
-                  val?.event_edition_id !== null &&
-                  val?.event_edition_id !== undefined
-                ) {
-                  return val?.event_edition_id;
-                }
-                return -11;
-              })
-              .filter((val) => val !== -11)
-              .join(',')}) where e.id is not null and
-            ep.event IN (${ids}) 
+            product p ON ep.product=p.id 
+			where e.id in (${ids}) 
           GROUP BY
-          ep.event
-          order by ep.event;`)) as Product[];
+          e.id`)) as Product[];
 
       const ticket = (await this.mysql.$queryRawUnsafe(`
         SELECT
@@ -228,6 +215,17 @@ and            ee.id IN (${edition500data
             where ee.id is not null
             GROUP BY ee.event;`)) as Venue[];
 
+      const eventType = await this.mysql.event_type.findMany({
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+
+      const eventTypeRecord: Record<string, string> = {};
+      for (const data of eventType) {
+        eventTypeRecord[data.id + ''] = data.name;
+      }
       // Create Maps for fast lookups
       const companyMap = new Map<number, CompanyDetails>();
       for (const comp of company) {
@@ -246,7 +244,14 @@ and            ee.id IN (${edition500data
       // Initialize dataToReturn with event data
       const dataToReturn: Record<string, EventDetails> = {};
       for (const event of event500Datafrom10times) {
-        dataToReturn[event.event_id + ''] = { ...event };
+        let temp: string[] = [];
+        for (const map of event.typemap.split(',')) {
+          if (eventTypeRecord[map]) temp.push(eventTypeRecord[map]);
+        }
+        dataToReturn[event.event_id + ''] = {
+          ...event,
+          event_type: temp.join(','),
+        };
       }
 
       // Merge event edition data
@@ -341,6 +346,7 @@ and            ee.id IN (${edition500data
 export interface EventDetails {
   event_id: number | null;
   event_city: string | null;
+  typemap: string | null;
   event_punchline: string | null;
   event_name: string | null;
   event_abbr_name: string | null;
