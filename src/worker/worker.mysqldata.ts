@@ -73,7 +73,7 @@ export class MysqLdata {
             stats.value AS stats
           FROM
           event e 
-          LEFT JOIN  event_edition ee on e.event_edition= ee.event and e.id in (${ids})
+          LEFT JOIN  event_edition ee on e.event_edition= ee.event 
           LEFT JOIN
             event_data description ON ee.id = description.event_edition And e.id = description.event
             AND description.title = 'desc'
@@ -86,6 +86,7 @@ export class MysqLdata {
             event_data stats ON ee.id = stats.event_edition And e.id = stats.event
             AND stats.title = 'stats'
             AND stats.value IS NOT NULL
+            where  e.id in (${ids})
             order by ee.event`)) as Editionother500data[];
       const category = (await this.mysql.$queryRawUnsafe(`
                 SELECT
