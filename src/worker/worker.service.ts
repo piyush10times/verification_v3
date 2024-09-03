@@ -468,6 +468,10 @@ export class WorkerService {
             break;
           }
         }
+        if (eventCategory.length !== microcategory.length) {
+          data_do_not_match += `\n category not matched \n`;
+          flagTowrite = true;
+        }
         if (
           (event1Datafrom10times?.companyname !== undefined &&
             microServiceData?.ownername?.trim() !== null &&
@@ -596,6 +600,10 @@ export class WorkerService {
             break;
           }
         }
+        if (event10timestype.length !== eventypeonMicro.length) {
+          data_do_not_match += `\n Event type not matched`;
+          flagTowrite = true;
+        }
         const event10timesProduct =
           event1Datafrom10times?.productname !== null &&
           event1Datafrom10times?.productname !== undefined
@@ -635,6 +643,10 @@ export class WorkerService {
             flagTowrite = true;
             break;
           }
+        }
+        if (event10timesProduct.length !== eventagonMicro.length) {
+          data_do_not_match += `\n tag/product not matched`;
+          flagTowrite = true;
         }
         // if (
         //   event1Datafrom10times?.ecity?.trim() !=
