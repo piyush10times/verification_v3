@@ -286,6 +286,14 @@ and            ee.id IN (${edition500data
         }
       }
 
+      // Merge venue data
+      for (const edition of edition500data) {
+        const eventKey = edition.event_id + '';
+        const venueData = venueMap.get(edition.event_venue || -1);
+        if (venueData && dataToReturn[eventKey]) {
+          await this.mergeData(dataToReturn[eventKey], venueData);
+        }
+      }
       // Merge company data
       for (const edition of edition500data) {
         const eventKey = edition.event_id + '';
@@ -294,13 +302,12 @@ and            ee.id IN (${edition500data
           await this.mergeData(dataToReturn[eventKey], companyData);
         }
       }
-
-      // Merge venue data
-      for (const edition of edition500data) {
-        const eventKey = edition.event_id + '';
-        const venueData = venueMap.get(edition.event_venue || -1);
-        if (venueData && dataToReturn[eventKey]) {
-          await this.mergeData(dataToReturn[eventKey], venueData);
+      for (const data of event500Datafrom10times) {
+        if (
+          dataToReturn[data.event_id + ''].company_id !== null &&
+          dataToReturn[data.event_id + ''].companyname === null
+        ) {
+          dataToReturn[data.event_id + ''].company_id = null;
         }
       }
       console.timeEnd('mysql');

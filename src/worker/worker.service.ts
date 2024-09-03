@@ -455,7 +455,7 @@ export class WorkerService {
         const eventCategory = event1Datafrom10times?.categoryname
           ? event1Datafrom10times?.categoryname?.split(',')
           : [];
-        const microcategory = !microServiceData?.category
+        const microcategory = microServiceData?.category
           ? microServiceData?.category?.split(',')
           : [];
         for (const data of eventCategory ?? []) {
