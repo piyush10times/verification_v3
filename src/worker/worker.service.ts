@@ -768,32 +768,9 @@ export class WorkerService {
             return false;
           }
         };
-        let exhibitingLeads: number | string | null = null;
-        let exhibitingLeadsUnprocessed = esData?._source?.exhibitingLeads + '';
-        if (
-          exhibitingLeadsUnprocessed !== null &&
-          exhibitingLeadsUnprocessed !== undefined
-        ) {
-          if (Array.isArray(exhibitingLeadsUnprocessed)) {
-            exhibitingLeads = exhibitingLeadsUnprocessed[0];
-          } else {
-            try {
-              const parsedData = JSON.parse(exhibitingLeadsUnprocessed);
-              if (typeof parsedData === 'number') {
-                exhibitingLeads = parsedData;
-              } else if (Array.isArray(parsedData)) {
-                exhibitingLeads = parsedData[0];
-              } else if (is_valid(exhibitingLeadsUnprocessed.trim())) {
-                exhibitingLeads = exhibitingLeadsUnprocessed;
-              }
-            } catch (error) {
-              // Handle parsing error if necessary
-              exhibitingLeads = is_valid(exhibitingLeadsUnprocessed.trim())
-                ? exhibitingLeadsUnprocessed
-                : null;
-            }
-          }
-        }
+        let exhibitingLeads = Array.isArray(esData?._source?.exhibitingLeads)
+          ? esData?._source?.exhibitingLeads[0]
+          : esData?._source?.exhibitingLeads;
         if (
           (+exhibitingLeads !== undefined ||
             +(microServiceData?.exhibitorsLeadCount ?? 121) === 0) &&
@@ -929,7 +906,7 @@ export class WorkerService {
             this.calculateExhibitorFootfall(
               event1Datafrom10times?.exhibitors_total ?? 0,
               event1Datafrom10times?.visitors_total ?? 0,
-              +(event1Datafrom10times?.event_type ?? '-89'),
+              +(event1Datafrom10times?.type ?? '-89'),
             );
           if (
             microServiceData.estimatedExhibitorLower !== lower_bound &&
@@ -950,7 +927,7 @@ export class WorkerService {
             this.calculateVisitorFootfall(
               event1Datafrom10times?.visitors_total ?? 0,
               +(esData?._source?.following || '-89'),
-              +(event1Datafrom10times?.event_type ?? '-89'),
+              +(event1Datafrom10times?.type ?? '-89'),
             );
           if (
             microServiceData.estimatedVisitorLower !== lower_bound &&
