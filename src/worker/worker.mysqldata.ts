@@ -56,7 +56,7 @@ export class MysqLdata {
             ee.start_date AS edition_start_date,
             ee.end_date AS edition_end_date,
             ee.venue AS event_venue ,
-            ee.company_id
+            ee.company_id as cpid
           FROM
             event_edition ee
         left  JOIN
@@ -368,6 +368,7 @@ export interface EventDetails {
 }
 export interface EventEditionDetails {
   event_id: number | null;
+  cpid: number | null;
   event_edition_id: number | null;
   event_facebook_id: string | null;
   event_linkedin_id: string | null;
