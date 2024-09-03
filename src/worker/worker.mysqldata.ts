@@ -218,12 +218,12 @@ and            ee.id IN (${edition500data
         }
       }
       const typemap = (await this.mysql
-        .$queryRaw`SELECT event_id, GROUP_CONCAT(eventtype_id SEPARATOR ',') typenum
+        .$queryRawUnsafe(`SELECT event_id, GROUP_CONCAT(eventtype_id SEPARATOR ',') typenum
       FROM event_type_event
       where event_id in (${ids}) and published =1
       GROUP BY
           event_id 
-`) as { event_id: number; typenum: string }[];
+`)) as { event_id: number; typenum: string }[];
       // Initialize dataToReturn with event data
       const dataToReturn: Record<string, EventDetails> = {};
       for (const event of event500Datafrom10times) {

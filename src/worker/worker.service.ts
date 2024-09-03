@@ -297,7 +297,7 @@ export class WorkerService {
           (microServiceData?.description !== null ||
             event1Datafrom10times?.description !== null) &&
           microServiceData?.description?.trim() !==
-            event1Datafrom10times?.description?.split('\n').join('').trim()
+            event1Datafrom10times?.description?.trim().replace(/\n/g, '')
         ) {
           data_do_not_match += `\n Event description not matched ${
             microServiceData?.description?.trim() +
@@ -372,16 +372,15 @@ export class WorkerService {
         ) {
           let status = '';
           const event_status: string = event1Datafrom10times?.event_status;
-          if (event_status)
-            if (event_status === 'P') status = 'POSTPONED';
-            else if (event_status === 'C') status = 'CANCELLED';
-            else if (event_status === 'U') status = 'UNVERIFIED';
-            else if (
-              event_status ||
-              event_status === 'A' ||
-              event_status === ''
-            )
-              status = 'ACTIVE';
+          if (event_status === 'P') status = 'POSTPONED';
+          else if (event_status === 'C') status = 'CANCELLED';
+          else if (event_status === 'U') status = 'UNVERIFIED';
+          else if (
+            !event_status ||
+            event_status === 'A'
+            // event_status === ''
+          )
+            status = 'ACTIVE';
           if (microServiceData?.status !== status) {
             data_do_not_match += `\n Event status not matched`;
             flagTowrite = true;
@@ -746,14 +745,47 @@ export class WorkerService {
             flagTowrite = true;
           }
         }
+        const is_valid = (x: string) => {
+          try {
+            JSON.parse(x);
+            return true;
+          } catch (error) {
+            return false;
+          }
+        };
+        let exhibitingLeads: number | string | null = null;
+        let exhibitingLeadsUnprocessed = esData?._source?.exhibitingLeads + '';
         if (
-          (+esData?._source?.exhibitingLeads !== undefined ||
+          exhibitingLeadsUnprocessed !== null &&
+          exhibitingLeadsUnprocessed !== undefined
+        ) {
+          if (Array.isArray(exhibitingLeadsUnprocessed)) {
+            exhibitingLeads = exhibitingLeadsUnprocessed[0];
+          } else {
+            try {
+              const parsedData = JSON.parse(exhibitingLeadsUnprocessed);
+              if (typeof parsedData === 'number') {
+                exhibitingLeads = parsedData;
+              } else if (Array.isArray(parsedData)) {
+                exhibitingLeads = parsedData[0];
+              } else if (is_valid(exhibitingLeadsUnprocessed.trim())) {
+                exhibitingLeads = exhibitingLeadsUnprocessed;
+              }
+            } catch (error) {
+              // Handle parsing error if necessary
+              exhibitingLeads = is_valid(exhibitingLeadsUnprocessed.trim())
+                ? exhibitingLeadsUnprocessed
+                : null;
+            }
+          }
+        }
+        if (
+          (+exhibitingLeads !== undefined ||
             +(microServiceData?.exhibitorsLeadCount ?? 121) === 0) &&
-          +esData?._source?.exhibitingLeads !==
-            +microServiceData?.exhibitorsLeadCount
+          +exhibitingLeads !== +microServiceData?.exhibitorsLeadCount
         ) {
           if (
-            +esData?._source?.exhibitingLeads !== undefined &&
+            +exhibitingLeads !== undefined &&
             +microServiceData?.exhibitorsLeadCount !== 0
           ) {
             data_do_not_match += `\n Event exhibitingLeads not matched`;
