@@ -316,11 +316,15 @@ export class WorkerService {
             event1Datafrom10times?.company_id !== null) &&
           microServiceData?.ownerSourceId !== event1Datafrom10times?.company_id
         ) {
-          data_do_not_match += `\n companyId not matched ${
-            microServiceData?.ownerSourceId +
-            '  $$  ' +
-            event1Datafrom10times?.company_id
-          }`;
+          if (
+            microServiceData?.ownerSourceId !== null &&
+            event1Datafrom10times?.company_id !== undefined
+          )
+            data_do_not_match += `\n companyId not matched ${
+              microServiceData?.ownerSourceId +
+              '  $$  ' +
+              event1Datafrom10times?.company_id
+            }`;
           flagTowrite = true;
         }
         if (
