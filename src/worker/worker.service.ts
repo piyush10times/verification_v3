@@ -272,8 +272,13 @@ export class WorkerService {
             event1Datafrom10times?.event_score !== null) &&
           microServiceData?.score !== event1Datafrom10times?.event_score
         ) {
-          data_do_not_match += `\n Event score not matched`;
-          flagTowrite = true;
+          if (
+            microServiceData?.score !== 0 &&
+            event1Datafrom10times?.event_score !== null
+          ) {
+            data_do_not_match += `\n Event score not matched`;
+            flagTowrite = true;
+          }
         }
         if (
           (microServiceData?.eventPageUrl !== null ||
@@ -447,14 +452,12 @@ export class WorkerService {
           data_do_not_match += `\n Event uuid not matched`;
           flagTowrite = true;
         }
-        const eventCategory =
-          !event1Datafrom10times?.categoryname 
-            ? event1Datafrom10times?.categoryname?.split(',')
-            : [];
-        const microcategory =
-          !microServiceData?.category
-            ? microServiceData?.category?.split(',')
-            : [];
+        const eventCategory = event1Datafrom10times?.categoryname
+          ? event1Datafrom10times?.categoryname?.split(',')
+          : [];
+        const microcategory = !microServiceData?.category
+          ? microServiceData?.category?.split(',')
+          : [];
         for (const data of eventCategory ?? []) {
           let notMatch = true;
           for (const d2 of microcategory ?? []) {
@@ -498,7 +501,7 @@ export class WorkerService {
         }
         if (
           microServiceData?.owneraddress?.trim() !=
-          event1Datafrom10times?.companyaddress?.trim()
+          event1Datafrom10times?.companyaddress?.trim().replace(/\n/g, ' ')
         ) {
           data_do_not_match += `\n Company address not matched`;
           flagTowrite = true;
@@ -602,30 +605,28 @@ export class WorkerService {
           data_do_not_match += `\n Event type not matched`;
           flagTowrite = true;
         }
-        const event10timesProduct =
-          !event1Datafrom10times?.productname
-            ? event1Datafrom10times?.productname
-                .split(',')
-                .filter(
-                  (val) =>
-                    val !== null &&
-                    val !== undefined &&
-                    val !== '' &&
-                    val.length > 0,
-                )
-            : [];
-        const eventagonMicro =
-          !microServiceData?.eventtag
-            ? microServiceData?.eventtag
-                ?.split(',')
-                .filter(
-                  (val) =>
-                    val !== null &&
-                    val !== undefined &&
-                    val !== '' &&
-                    val.length > 0,
-                )
-            : [];
+        const event10timesProduct = event1Datafrom10times?.productname
+          ? event1Datafrom10times?.productname
+              .split(',')
+              .filter(
+                (val) =>
+                  val !== null &&
+                  val !== undefined &&
+                  val !== '' &&
+                  val.length > 0,
+              )
+          : [];
+        const eventagonMicro = microServiceData?.eventtag
+          ? microServiceData?.eventtag
+              ?.split(',')
+              .filter(
+                (val) =>
+                  val !== null &&
+                  val !== undefined &&
+                  val !== '' &&
+                  val.length > 0,
+              )
+          : [];
         // console.log(event10timesProduct, eventagonMicro);
 
         for (const data of event10timesProduct ?? []) {
@@ -1211,6 +1212,7 @@ export interface EventDetails {
   event_end_date: Date | null;
   event_status: string | null;
   event_score: number | null;
+  type: number | null;
   event_audience: number | null;
   event_frequency: string | null;
   event_created: Date | null;

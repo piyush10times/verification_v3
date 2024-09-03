@@ -30,7 +30,8 @@ export class MysqLdata {
             e.published AS publish_status,
             ee.visitors_total ,
             ee.exhibitors_total,
-             '-1' as event_type
+             '-1' as event_type,
+             e.event_type as type
           FROM
             event e
           LEFT JOIN
@@ -337,6 +338,7 @@ and            ee.id IN (${edition500data
 export interface EventDetails {
   event_id: number | null;
   event_city: string | null;
+  type: number | null;
   event_punchline: string | null;
   event_name: string | null;
   event_abbr_name: string | null;
