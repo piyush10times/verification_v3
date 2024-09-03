@@ -376,7 +376,7 @@ export interface Editionother500data {
   event_id: number | null;
   event_edition_id: number | null;
   description: string | null;
-  timing: Date | null;
+  timing: string | null;
   stats: string | null;
 }
 export interface Category {
