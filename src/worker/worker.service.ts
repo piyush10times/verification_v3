@@ -297,7 +297,7 @@ export class WorkerService {
           (microServiceData?.description !== null ||
             event1Datafrom10times?.description !== null) &&
           microServiceData?.description?.trim() !==
-            event1Datafrom10times?.description?.trim()
+            event1Datafrom10times?.description?.split('\n').join('').trim()
         ) {
           data_do_not_match += `\n Event description not matched ${
             microServiceData?.description?.trim() +
