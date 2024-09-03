@@ -72,9 +72,10 @@ export class MysqLdata {
             timing.value AS timing,
             stats.value AS stats
           FROM
-            event_edition ee
+          event e 
+          LEFT JOIN  event_edition ee on e.event_edition= ee.event and e.id in (${ids})
           LEFT JOIN
-            event_data description ON ee.id = description.event_edition
+            event_data description ON ee.id = description.event_edition And e.id = description.event
             AND description.title = 'desc'
             AND description.value IS NOT NULL
           LEFT JOIN
@@ -82,22 +83,9 @@ export class MysqLdata {
             AND timing.title = 'timing'
             AND timing.value IS NOT NULL
           LEFT JOIN
-            event_data stats ON ee.id = stats.event_edition
+            event_data stats ON ee.id = stats.event_edition And e.id = stats.event
             AND stats.title = 'stats'
             AND stats.value IS NOT NULL
-              WHERE
-            ee.id IN (${edition500data
-              .map((val) => {
-                if (
-                  val?.event_edition_id !== null &&
-                  val?.event_edition_id !== undefined
-                ) {
-                  return val?.event_edition_id;
-                }
-                return -11;
-              })
-              .filter((val) => val !== -11)
-              .join(',')})
             order by ee.event`)) as Editionother500data[];
       const category = (await this.mysql.$queryRawUnsafe(`
                 SELECT
@@ -253,7 +241,7 @@ and            ee.id IN (${edition500data
             break;
           }
         }
-        let temp: string[] = ['dsfdf', 'fczascf', 'sdfds'];
+        let temp: string[] = [];
         for (const map of alltypeid.split(',')) {
           if (eventTypeRecord[map]) temp.push(eventTypeRecord[map]);
         }
