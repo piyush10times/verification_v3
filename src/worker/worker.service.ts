@@ -521,22 +521,28 @@ export class WorkerService {
           flagTowrite = true;
         }
         if (
+          event1Datafrom10times?.total_exhibit !== null &&
+          event1Datafrom10times?.total_exhibit !== undefined &&
           +microServiceData?.totalExhibit !==
-          +event1Datafrom10times?.total_exhibit
+            +event1Datafrom10times?.total_exhibit
         ) {
           data_do_not_match += `\n Company totalExhibit not matched`;
           flagTowrite = true;
         }
         if (
+          event1Datafrom10times?.total_sponsor !== null &&
+          event1Datafrom10times?.total_sponsor !== undefined &&
           +microServiceData?.totalSponsor !==
-          +event1Datafrom10times?.total_sponsor
+            +event1Datafrom10times?.total_sponsor
         ) {
           data_do_not_match += `\n Company totalSponsor not matched`;
           flagTowrite = true;
         }
         if (
+          event1Datafrom10times?.total_visitor !== null &&
+          event1Datafrom10times?.total_visitor !== undefined &&
           +microServiceData?.totalVisitor !==
-          +event1Datafrom10times?.total_visitor
+            +event1Datafrom10times?.total_visitor
         ) {
           data_do_not_match += `\n Company totalVisitor not matched`;
           flagTowrite = true;
@@ -809,7 +815,8 @@ export class WorkerService {
         if (
           (+esData?._source?.speakingLeads !== undefined ||
             (microServiceData?.speakersLeadCount ?? 545) === 0) &&
-          +esData?._source?.speakingLeads !== microServiceData?.speakersLeadCount
+          +esData?._source?.speakingLeads !==
+            microServiceData?.speakersLeadCount
         ) {
           if (
             +esData?._source?.speakingLeads !== undefined &&

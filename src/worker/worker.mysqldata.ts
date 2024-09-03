@@ -154,10 +154,9 @@ export class MysqLdata {
          e.id AS event_id,
          GROUP_CONCAT(DISTINCT et.type ORDER BY et.type ASC SEPARATOR ',')
           AS ticket_type
-       FROM
-         event e
-       LEFT JOIN
-         event_ticket et ON et.event = e.id
+      from event e left join event_edition ee 
+      on e.event_edition = ee.id 
+      left join event_ticket et on e.id = et.event and ee.id = et.edition
        WHERE
          e.id IN (${ids})
        GROUP BY
