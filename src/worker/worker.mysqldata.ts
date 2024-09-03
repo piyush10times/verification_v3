@@ -141,7 +141,7 @@ export class MysqLdata {
               .join(',')})
               order by c.id `)) as CompanyDetails[];
       const product = (await this.mysql.$queryRawUnsafe(`
-            select e.id,GROUP_CONCAT(DISTINCT p.name  SEPARATOR ',') AS productname
+            select e.id as event_id,GROUP_CONCAT(DISTINCT p.name  SEPARATOR ',') AS productname
           FROM event e
           left JOIN event_products ep  on e.id=ep.event and e.event_edition= ep.edition and ep.published = 1
           LEFT JOIN
