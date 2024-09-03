@@ -572,7 +572,11 @@ export class WorkerService {
                     val.length > 0,
                 )
             : [];
-        const event10timestype = esData?._source?.event_type_new;
+        const event10timestype =
+          event1Datafrom10times?.event_type !== null &&
+          event1Datafrom10times?.event_type !== '-1'
+            ? event1Datafrom10times?.event_type.split(',')
+            : [];
         for (const data of event10timestype ?? []) {
           let notMatch = true;
           for (const d2 of eventypeonMicro ?? []) {
