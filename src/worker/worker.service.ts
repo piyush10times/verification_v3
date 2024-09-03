@@ -807,9 +807,9 @@ export class WorkerService {
           }
         }
         if (
-          (esData?._source?.speakingLeads !== undefined ||
+          (+esData?._source?.speakingLeads !== undefined ||
             (microServiceData?.speakersLeadCount ?? 545) === 0) &&
-          esData?._source?.speakingLeads !== microServiceData?.speakersLeadCount
+          +esData?._source?.speakingLeads !== microServiceData?.speakersLeadCount
         ) {
           if (
             +esData?._source?.speakingLeads !== undefined &&
