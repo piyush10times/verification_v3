@@ -383,7 +383,8 @@ export class WorkerService {
           const event_status: string = event1Datafrom10times?.event_status;
           if (event_status === 'P') status = 'POSTPONED';
           else if (event_status === 'C') status = 'CANCELLED';
-          else if (event_status === 'U') status = 'UNVERIFIED';
+          else
+            if (event_status === 'U') status = 'UNVERIFIED';
           else
             status = 'ACTIVE';
           if (microServiceData?.status !== status) {
