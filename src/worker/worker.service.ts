@@ -448,13 +448,11 @@ export class WorkerService {
           flagTowrite = true;
         }
         const eventCategory =
-          event1Datafrom10times?.categoryname !== null &&
-          event1Datafrom10times?.categoryname !== undefined
+          !event1Datafrom10times?.categoryname 
             ? event1Datafrom10times?.categoryname?.split(',')
             : [];
         const microcategory =
-          microServiceData?.category !== null &&
-          microServiceData?.category !== undefined
+          !microServiceData?.category
             ? microServiceData?.category?.split(',')
             : [];
         for (const data of eventCategory ?? []) {
@@ -605,8 +603,7 @@ export class WorkerService {
           flagTowrite = true;
         }
         const event10timesProduct =
-          event1Datafrom10times?.productname !== null &&
-          event1Datafrom10times?.productname !== undefined
+          !event1Datafrom10times?.productname
             ? event1Datafrom10times?.productname
                 .split(',')
                 .filter(
@@ -618,8 +615,7 @@ export class WorkerService {
                 )
             : [];
         const eventagonMicro =
-          microServiceData?.eventtag !== null &&
-          microServiceData?.eventtag !== undefined
+          !microServiceData?.eventtag
             ? microServiceData?.eventtag
                 ?.split(',')
                 .filter(
