@@ -697,14 +697,15 @@ export class WorkerService {
           if (
             esData?._source?.repeatSentiment !== undefined &&
             microServiceData?.repeatSentiment !== 0
-          )
+          ) {
             data_do_not_match += `\n Event repeatSentiment not matched ${
               esData?._source?.repeatSentiment +
               '  $$ ' +
               microServiceData?.repeatSentiment +
               ''
             }`;
-          flagTowrite = true;
+            flagTowrite = true;
+          }
         }
         if (
           (esData?._source?.reputationSentiment !== undefined ||
@@ -716,14 +717,15 @@ export class WorkerService {
             esData?._source?.reputationSentiment !== null &&
             microServiceData?.reputationSentiment !== '-888888' &&
             microServiceData?.reputationSentiment !== '0'
-          )
+          ) {
             data_do_not_match += `\n Event reputationSentiment not matched  ${
               esData?._source?.reputationSentiment +
               '  $$  ' +
               microServiceData?.reputationSentiment +
               ''
             }`;
-          flagTowrite = true;
+            flagTowrite = true;
+          }
         }
         if (
           (+esData?._source?.exhibitingLeads !== undefined ||
@@ -734,9 +736,10 @@ export class WorkerService {
           if (
             esData?._source?.exhibitingLeads !== undefined &&
             microServiceData?.exhibitorsLeadCount !== 0
-          )
+          ) {
             data_do_not_match += `\n Event exhibitingLeads not matched`;
-          flagTowrite = true;
+            flagTowrite = true;
+          }
         }
         if (
           (esData?._source?.sponsoringLeads !== undefined ||
@@ -747,9 +750,10 @@ export class WorkerService {
           if (
             esData?._source?.sponsoringLeads !== undefined &&
             microServiceData?.sponsorsLeadCount !== 0
-          )
+          ) {
             data_do_not_match += `\n Event sponsorsLeadCount not matched`;
-          flagTowrite = true;
+            flagTowrite = true;
+          }
         }
         if (
           (esData?._source?.speakingLeads !== undefined ||
@@ -759,9 +763,10 @@ export class WorkerService {
           if (
             esData?._source?.speakingLeads !== undefined &&
             microServiceData?.speakersLeadCount !== 0
-          )
+          ) {
             data_do_not_match += `\n Event speakingLeads not matched`;
-          flagTowrite = true;
+            flagTowrite = true;
+          }
         }
         const fsdate =
           esData?._source?.futureExpexctedEndDate !== null &&
@@ -802,14 +807,15 @@ export class WorkerService {
           if (
             esData?._source?.avg_rating !== undefined &&
             microServiceData?.averageRating + '' !== 0 + ''
-          )
+          ) {
             data_do_not_match += `\n Event averageRating not matched  ${
               esData?._source?.avg_rating +
               ' $$ ' +
               microServiceData?.averageRating +
               ''
             }`;
-          flagTowrite = true;
+            flagTowrite = true;
+          }
         }
 
         if (
