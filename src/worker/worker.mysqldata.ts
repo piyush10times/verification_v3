@@ -30,7 +30,7 @@ export class MysqLdata {
             e.published AS publish_status,
             ee.visitors_total ,
             ee.exhibitors_total,
-             -1 as event_type
+             '-1' as event_type
           FROM
             event e
           LEFT JOIN
