@@ -66,11 +66,11 @@ export class MysqLdata {
                 `)) as EventEditionDetails[];
       const editionother500data = (await this.mysql.$queryRawUnsafe(`
                   SELECT
-            ee.event as event_id,
+            e.id as event_id,
             ee.id AS event_edition_id,
             description.value AS description,
-            timing.value AS timing,
-            stats.value AS stats
+            'timing.value' AS timing,
+            'stats.value' AS stats
           FROM
           event e 
           LEFT JOIN  event_edition ee on e.event_edition= ee.id 
@@ -78,14 +78,6 @@ export class MysqLdata {
             event_data description ON ee.id = description.event_edition And e.id = description.event
             AND description.title = 'desc'
             AND description.value IS NOT NULL
-          LEFT JOIN
-            event_data timing ON ee.id = timing.event_edition
-            AND timing.title = 'timing'
-            AND timing.value IS NOT NULL
-          LEFT JOIN
-            event_data stats ON ee.id = stats.event_edition And e.id = stats.event
-            AND stats.title = 'stats'
-            AND stats.value IS NOT NULL
             where  e.id in (${ids})
             order by ee.event`)) as Editionother500data[];
       const category = (await this.mysql.$queryRawUnsafe(`
