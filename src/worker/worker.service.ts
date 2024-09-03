@@ -252,7 +252,7 @@ export class WorkerService {
           (microServiceData?.shortDescription !== null ||
             event1Datafrom10times?.event_punchline !== null) &&
           microServiceData?.shortDescription?.trim() !=
-            event1Datafrom10times?.event_punchline?.trim()
+            event1Datafrom10times?.event_punchline?.trim().replace(/\n/g, ' ')
         ) {
           data_do_not_match += `\n Event shortDescription not matched`;
           flagTowrite = true;
