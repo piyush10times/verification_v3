@@ -73,7 +73,7 @@ export class MysqLdata {
             stats.value AS stats
           FROM
           event e 
-          LEFT JOIN  event_edition ee on e.event_edition= ee.event 
+          LEFT JOIN  event_edition ee on e.event_edition= ee.id 
           LEFT JOIN
             event_data description ON ee.id = description.event_edition And e.id = description.event
             AND description.title = 'desc'
