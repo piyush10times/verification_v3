@@ -530,7 +530,11 @@ export class WorkerService {
           +microServiceData?.totalExhibit !==
             +event1Datafrom10times?.total_exhibit
         ) {
-          data_do_not_match += `\n Company totalExhibit not matched`;
+          data_do_not_match += `\n Company totalExhibit not matched${
+            +microServiceData?.totalExhibit +
+            ' && ' +
+            +event1Datafrom10times?.total_exhibit
+          }`;
           flagTowrite = true;
         }
         if (
