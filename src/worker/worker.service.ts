@@ -396,12 +396,12 @@ export class WorkerService {
           if (esData?._id !== null) {
             const field_hybrid: number =
               esData?._source?.hybrid !== null ? +esData?._source?.hybrid : -11;
-            const field_city: number =
-              esData?._source?.city !== null ? +esData?._source?.city : -11;
-
-            if (field_city !== null && field_city === 1) eventFormat = 'ONLINE';
-            else if (field_hybrid !== null && field_hybrid === 1)
+            const field_city: string =
+              esData?._source?.city !== null ? esData?._source?.city : '-11';
+            if (field_hybrid !== null && field_hybrid === 1)
               eventFormat = 'HYBRID';
+            else if (field_city !== null && field_city === '1')
+              eventFormat = 'ONLINE';
             else eventFormat = 'OFFLINE';
           }
           // console.log(
@@ -1255,7 +1255,7 @@ export interface EventMetrics {
     total_edition: number | null;
     event_type_new: string | null;
     hybrid: number | null;
-    city: number | null;
+    city: string | null;
     interested: number | null;
     exhibitors: number | null;
     futureExpexctedStartDate: Date | null;

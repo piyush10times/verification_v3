@@ -297,7 +297,11 @@ and            ee.id IN (${edition500data
       // Merge company data
       for (const edition of edition500data) {
         const eventKey = edition.event_id + '';
-        const companyData = companyMap.get(edition.cpid || -1);
+        const companyId =
+          edition.cpid !== null || edition.cpid !== undefined
+            ? edition.cpid
+            : -1;
+        const companyData = companyMap.get(companyId);
         if (companyData && dataToReturn[eventKey]) {
           await this.mergeData(dataToReturn[eventKey], companyData);
         }
